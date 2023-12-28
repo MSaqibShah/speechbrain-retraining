@@ -33,6 +33,13 @@ from speechbrain.dataio.batch import PaddedBatch
 from speechbrain.pretrained import SpeakerRecognition
 import speechbrain as sb
 
+import torchaudio
+
+torchaudio.set_audio_backend("soundfile")
+
+from audio_processing import audio_pipeline
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +148,90 @@ class LanguageBrain(sb.core.Brain):
             )
 
 
+# def dataio_prep_shards(hparams):
+
+#     # load the meta info json file
+#     with wds.gopen(hparams["train_meta"], "rb") as f:
+#         train_meta = json.load(f)
+#     with wds.gopen(hparams["val_meta"], "rb") as f:
+#         val_meta = json.load(f)
+
+#     # define the mapping functions in the data pipeline
+#     snt_len_sample = int(hparams["sample_rate"] * hparams["sentence_len"])
+#     label_encoder = sb.dataio.encoder.CategoricalEncoder()
+#     lab_enc_file = os.path.join(hparams["save_folder"], "label_encoder.txt")
+#     label_encoder.load_or_create(
+#         path=lab_enc_file,
+#         from_iterables=[train_meta["language_ids"]],
+#         output_key="lang_id",
+#     )
+#     # breakpoint()
+
+#     def audio_pipeline(sample_dict: Dict, random_chunk=True):
+#         key = sample_dict["__key__"]
+#         language_id = sample_dict["language_id"].decode("ascii")
+#         audio_tensor = sample_dict["audio.pth"]
+
+#         # determine what part of audio sample to use
+#         audio_tensor = audio_tensor.squeeze()
+
+#         if random_chunk:
+#             if len(audio_tensor) - snt_len_sample - 1 <= 0:
+#                 start = 0
+#             else:
+#                 start = random.randint(
+#                     0, len(audio_tensor) - snt_len_sample - 1
+#                 )
+
+#             stop = start + snt_len_sample
+#         else:
+#             start = 0
+#             stop = len(audio_tensor)
+
+#         sig = audio_tensor[start:stop]
+
+#         # determine the language ID of the sample
+#         lang_id_idx = label_encoder.encode_label(language_id)
+
+#         return {
+#             "sig": sig,
+#             "lang_id_encoded": lang_id_idx,
+#             "id": key,
+#         }
+
+#     train_data = (
+#         wds.WebDataset(
+#             hparams["train_shards"], cache_dir=hparams["shard_cache_dir"],
+#         )
+#         .repeat()
+#         .shuffle(1000)
+#         .decode("pil")
+#         .map(partial(audio_pipeline, random_chunk=True))
+#     )
+#     logger.info(
+#         f"Training data consist of {train_meta['num_data_samples']} samples"
+#     )
+
+#     valid_data = (
+#         wds.WebDataset(
+#             hparams["val_shards"], cache_dir=hparams["shard_cache_dir"],
+#         )
+#         .decode("pil")
+#         .map(partial(audio_pipeline, random_chunk=False))
+#     )
+#     logger.info(
+#         f"Validation data consist of {val_meta['num_data_samples']} samples"
+#     )
+
+#     return (
+#         train_data,
+#         valid_data,
+#         train_meta["num_data_samples"],
+#         val_meta["num_data_samples"],
+#     )
+
+
+
 def dataio_prep_shards(hparams):
 
     # load the meta info json file
@@ -160,38 +251,7 @@ def dataio_prep_shards(hparams):
     )
     # breakpoint()
 
-    def audio_pipeline(sample_dict: Dict, random_chunk=True):
-        key = sample_dict["__key__"]
-        language_id = sample_dict["language_id"].decode("ascii")
-        audio_tensor = sample_dict["audio.pth"]
-
-        # determine what part of audio sample to use
-        audio_tensor = audio_tensor.squeeze()
-
-        if random_chunk:
-            if len(audio_tensor) - snt_len_sample - 1 <= 0:
-                start = 0
-            else:
-                start = random.randint(
-                    0, len(audio_tensor) - snt_len_sample - 1
-                )
-
-            stop = start + snt_len_sample
-        else:
-            start = 0
-            stop = len(audio_tensor)
-
-        sig = audio_tensor[start:stop]
-
-        # determine the language ID of the sample
-        lang_id_idx = label_encoder.encode_label(language_id)
-
-        return {
-            "sig": sig,
-            "lang_id_encoded": lang_id_idx,
-            "id": key,
-        }
-
+    
     train_data = (
         wds.WebDataset(
             hparams["train_shards"], cache_dir=hparams["shard_cache_dir"],
@@ -199,7 +259,7 @@ def dataio_prep_shards(hparams):
         .repeat()
         .shuffle(1000)
         .decode("pil")
-        .map(partial(audio_pipeline, random_chunk=True))
+        .map(partial(audio_pipeline,  snt_len_sample=snt_len_sample, label_encoder=label_encoder, random_chunk=True))
     )
     logger.info(
         f"Training data consist of {train_meta['num_data_samples']} samples"
@@ -210,7 +270,7 @@ def dataio_prep_shards(hparams):
             hparams["val_shards"], cache_dir=hparams["shard_cache_dir"],
         )
         .decode("pil")
-        .map(partial(audio_pipeline, random_chunk=False))
+        .map(partial(audio_pipeline, snt_len_sample=snt_len_sample, label_encoder=label_encoder, random_chunk=False))
     )
     logger.info(
         f"Validation data consist of {val_meta['num_data_samples']} samples"
@@ -325,8 +385,19 @@ if __name__ == "__main__":
     x = model.eval()
 
     my_brain = LanguageBrain(
-    modules=hparams["modules"],
+        modules=hparams["modules"],
         hparams=hparams,
+        run_opts=None,
+        opt_class=hparams["opt_class"],
+        checkpointer=hparams["checkpointer"],
+    )
+
+    my_brain.fit(
+        my_brain.hparams.epoch_counter,
+        train_data,
+        valid_data,
+        train_loader_kwargs=hparams["train_dataloader_options"],
+        valid_loader_kwargs=hparams["val_dataloader_options"],
     )
 
     

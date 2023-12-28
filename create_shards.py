@@ -75,12 +75,6 @@ def write_shards(
             end = float(m.group(5))
             dur = end - start
 
-            print(f"loc: {loc}")
-            print(f"key: {key}")
-            print(f"lang: {lang}")
-            print(f"start: {start}")
-            print(f"end: {end}")
-            print(f"dur: {dur}")
             
             # Period is not allowed in a WebDataset key name
             key = key.replace(".", "_")
@@ -102,6 +96,7 @@ def write_shards(
         "sample_keys_per_language": sample_keys_per_language,
         "num_data_samples": len(data_tuples),
     }
+    print("meta_dict:", meta_dict, sep="\n")
 
     with (shards_path / "meta.json").open("w") as f:
         json.dump(meta_dict, f)
