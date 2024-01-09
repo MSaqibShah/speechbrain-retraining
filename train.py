@@ -292,15 +292,9 @@ if __name__ == "__main__":
     import speechbrain as sb
     from speechbrain.pretrained import SpeakerRecognition
 
-    # logger.info("Starting training...")
-    # # This flag enables the inbuilt cudnn auto-tuner
-    # torch.backends.cudnn.benchmark = True
-
-    # # CLI:
-    # hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[1:])
-
-    # # Initialize ddp (useful only for multi-GPU DDP training)
-    # sb.utils.distributed.ddp_init_group(run_opts)
+    
+    
+    
 
     # # Load hyperparameters file with command-line overrides
     # with open(hparams_file) as fin:
@@ -348,9 +342,15 @@ if __name__ == "__main__":
 
 
     # New 
+    logger.info("Starting training...")
+
+    # # This flag enables the inbuilt cudnn auto-tuner
+    torch.backends.cudnn.benchmark = True
+
+    # # Initialize ddp (useful only for multi-GPU DDP training)
+    sb.utils.distributed.ddp_init_group(run_opts)
 
     hparams_file = "hyperparams.yaml"  
-    hparams_file2 = "hyperparams2.yaml"  
     with open(hparams_file) as fin:
         hparams = load_hyperpyyaml(fin)
 
@@ -375,19 +375,14 @@ if __name__ == "__main__":
     # Create experiment directory
     sb.core.create_experiment_directory(
         experiment_directory=hparams["output_folder"],
-        hyperparams_to_save=hparams_file2,
+        hyperparams_to_save=hparams_file,
     )
 
-    model_path = "speechbrain/lang-id-voxlingua107-ecapa"
-    model = SpeakerRecognition.from_hparams(
-    source=model_path
-    )
-    x = model.eval()
-
+    
     my_brain = LanguageBrain(
         modules=hparams["modules"],
         hparams=hparams,
-        run_opts=None,
+        run_opts={"device":"cuda"},
         opt_class=hparams["opt_class"],
         checkpointer=hparams["checkpointer"],
     )

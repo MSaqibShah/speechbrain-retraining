@@ -22,8 +22,14 @@ import webdataset as wds
 
 ID_SEPARATOR = "&"
 
+import torchaudio
+
+# Set the audio backend to 'sox'
+torchaudio.set_audio_backend("sox")
+
 
 def load_audio(audio_file_path: pathlib.Path) -> torch.Tensor:
+    print(audio_file_path)
     t, sr = torchaudio.load(audio_file_path)
 
     if sr != 16000:

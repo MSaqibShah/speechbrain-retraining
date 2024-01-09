@@ -17,8 +17,8 @@ rir_folder: !ref <data_folder>
 shards_url: ./data/finalshards
 train_meta: !ref <shards_url>/dev/meta.json
 val_meta: !ref <shards_url>/dev/meta.json
-train_shards: !ref <shards_url>/train/shard-000000.tar
-val_shards: !ref <shards_url>/dev/shard-000000.tar
+train_shards: !ref <shards_url>/train/shard-{000000..000008}.tar
+val_shards: !ref <shards_url>/dev/shard-{000000..000001}.tar
 
 # Set to directory on a large disk if you are training on Webdataset shards hosted on the web
 shard_cache_dir:
@@ -42,11 +42,11 @@ deltas: false
 out_n_neurons: 107
 
 train_dataloader_options:
-  num_workers: 4
+  num_workers: 8
   batch_size: 128
 
 val_dataloader_options:
-  num_workers: 1
+  num_workers: 2
   batch_size: 32
 
 # Functions
