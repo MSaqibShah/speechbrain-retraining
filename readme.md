@@ -29,3 +29,13 @@ After the data shards are created we can run the `train.py` to start retraning t
 [Model Recipie](https://github.com/speechbrain/speechbrain/tree/develop/recipes/VoxLingua107)
 
 [Pretraining Example](https://colab.research.google.com/drive/1LN7R3U3xneDgDRK2gC5MzGkLysCWxuC3?usp=sharing#scrollTo=R3B4Dv1Wjfv6)
+
+# How to use the model.
+
+## 1. Download the model
+
+Use the Link below to download the model from google drive and then extract the model files in the project root.
+
+## 2. Test the model
+
+Run the `test.py` to check if everything is working. Make sure to update the audio file path in test.py to a valid audio path.
