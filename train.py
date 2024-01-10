@@ -348,7 +348,7 @@ if __name__ == "__main__":
     torch.backends.cudnn.benchmark = True
 
     # # Initialize ddp (useful only for multi-GPU DDP training)
-    sb.utils.distributed.ddp_init_group(run_opts)
+    # sb.utils.distributed.ddp_init_group({"device":"cuda"})
 
     hparams_file = "hyperparams.yaml"  
     with open(hparams_file) as fin:

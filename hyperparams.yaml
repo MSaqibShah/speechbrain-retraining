@@ -1,4 +1,4 @@
-pretrained_path: speechbrain/lang-id-voxlingua107-ecapa
+pretrained_path: results\epaca\1988\save\CKPT+2024-01-10+01-48-40+00
 ################################
 # Model: language identification with ECAPA
 # Authors: Tanel Alumäe, 2021
@@ -17,8 +17,8 @@ rir_folder: !ref <data_folder>
 shards_url: ./data/finalshards
 train_meta: !ref <shards_url>/dev/meta.json
 val_meta: !ref <shards_url>/dev/meta.json
-train_shards: !ref <shards_url>/train/shard-{000000..000008}.tar
-val_shards: !ref <shards_url>/dev/shard-{000000..000001}.tar
+train_shards: !ref <shards_url>/train/shard-{000000..000006}.tar
+val_shards: !ref <shards_url>/dev/shard-{000000..000003}.tar
 
 # Set to directory on a large disk if you are training on Webdataset shards hosted on the web
 shard_cache_dir:
@@ -39,14 +39,14 @@ right_frames: 0
 deltas: false
 
 # Number of speakers
-out_n_neurons: 107
+out_n_neurons: 2
 
 train_dataloader_options:
-  num_workers: 8
-  batch_size: 128
+  num_workers: 4
+  batch_size: 64
 
 val_dataloader_options:
-  num_workers: 2
+  num_workers: 1
   batch_size: 32
 
 # Functions
